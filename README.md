@@ -8,14 +8,14 @@ another file concurrently.
 Then, You should implement an api to get file or send file to the user.
 REST APIs that you should implement are listed below:
 
-### `localhost:8080/uploadFile`
+## `localhost:8080/uploadFile`
     
 ***input formats*** :
     
 1. **json** :
       ```json
        {
-           "file" : string
+           "file" : "string"
        }
       ```
 
@@ -38,7 +38,7 @@ REST APIs that you should implement are listed below:
       *successful upload* : 
       ```json
        {
-           "file_id" : string
+           "file_id" : "string"
        }
       ```
 
@@ -52,7 +52,7 @@ REST APIs that you should implement are listed below:
       *failure upload* :
       ```json
        {
-           "error" : string
+           "error" : "string"
        }
       ```
       
@@ -62,12 +62,12 @@ REST APIs that you should implement are listed below:
 
 <br />
 
-### `localhost:8080/downloadFile` 
+## `localhost:8080/downloadFile` 
 
 1. **json** :
       ```json
        {
-           "file_id" : string
+           "file_id" : "string"
        }
       ```
 
@@ -94,7 +94,7 @@ REST APIs that you should implement are listed below:
    *failure download* :
       ```json
        {
-           "error" : string
+           "error" : "string"
        }
       ```
 
