@@ -10,11 +10,11 @@ import (
 )
 
 func Run() {
-	fmt.Println("Server is running on port " + 8080)
+	fmt.Println("Server is running on port " + "8080")
 	time.Sleep(time.Second * 3)
 
 	h := api.Handler{
-		FileDB: model.FileDB{},
+		FileRepo: model.FileRepo{},
 	}
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {

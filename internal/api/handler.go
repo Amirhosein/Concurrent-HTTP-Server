@@ -1,17 +1,19 @@
 package api
 
 import (
+	"net/http"
+
 	"anbar.bale.ai/a.iravanimanesh/concurrent-http-server/internal/model"
 	"anbar.bale.ai/a.iravanimanesh/concurrent-http-server/internal/response"
 	"github.com/labstack/echo"
 )
 
 type Handler struct {
-	FileDB model.FileDB
+	FileRepo model.FileRepo
 }
 
 func (h Handler) Home(c echo.Context) error {
-	message := response.Message{Message: "Hello World"}
+	message := response.Message{Message: "Welcome to your concurrent http server!"}
 
-	return c.JSON(200, message)
+	return c.JSON(http.StatusOK, message)
 }
