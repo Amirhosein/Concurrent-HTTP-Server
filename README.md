@@ -107,8 +107,8 @@ REST APIs that you should implement are listed below:
 
 # Roadmap
 
-- [ ] Implement reading concurrently from a file.
-- [ ] Implement writing concurrently to a file.
-- [ ] Examine the writing performance with different number of goroutines and number of bytes each goroutine writes in one access.
+- [x] Implement reading concurrently from a file.
+- [x] Implement writing concurrently to a file.
+- [x] Examine the writing performance with different number of goroutines and number of bytes each goroutine writes in one access.
 - [ ] Add REST APIs.
 - [ ] Complete your upload/download http server.

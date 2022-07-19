@@ -57,6 +57,7 @@ func Write(filename string, b []byte, ofset int64, wg *sync.WaitGroup) {
 
 	file.WriteAt(b, ofset)
 }
+
 func ConcurrentFileWrite(filename string, data []byte) {
 	var wg sync.WaitGroup
 	size := int64(math.Ceil(float64(len(data)) / float64(Concurrecy)))
