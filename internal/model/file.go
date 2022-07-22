@@ -1,6 +1,10 @@
 package model
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"anbar.bale.ai/a.iravanimanesh/concurrent-http-server/internal/pkg"
+)
 
 type File struct {
 	Data []byte
@@ -15,7 +19,7 @@ func (s *File) UnmarshalBinary(data []byte) error {
 }
 
 type FileRepo struct {
-	Files map[string]File
+	Files map[uint64]File
 }
 
 type FileDB interface {
@@ -23,11 +27,12 @@ type FileDB interface {
 	Set(key string, value File)
 }
 
-func (s FileRepo) Get(key string) (File, bool) {
+func (s FileRepo) Get(key uint64) (File, bool) {
 	value, ok := s.Files[key]
 	return value, ok
 }
 
-func (s *FileRepo) Set(key string, value File) {
+func (s *FileRepo) Set(name string, key uint64, value File) {
 	s.Files[key] = value
+	pkg.ConcurrentFileWrite(name, value.Data)
 }
