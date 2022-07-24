@@ -62,7 +62,7 @@ func ConcurrentFileRead(filename string) []byte {
 func Write(filename string, b []byte, ofset int64, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile("/var/files/"+filename, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatalf("failed creating file: %s", err)
 	}
