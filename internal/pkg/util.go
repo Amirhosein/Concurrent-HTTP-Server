@@ -13,20 +13,27 @@ const (
 	Concurrecy = 10
 )
 
-func Read(file *os.File, d chan []byte, size, ofset int64) {
+type Data struct {
+	Data   []byte
+	Offset int64
+}
+
+func Read(file *os.File, d chan Data, size, ofset int64, Readed []byte) {
 	data := make([]byte, size)
 
 	_, err := file.ReadAt(data, ofset)
 	if err == io.EOF {
 		log.Fatalf("failed creating file: %s", err)
 	}
-	d <- data
+
+	d <- Data{
+		Data:   data,
+		Offset: ofset,
+	}
 }
 func ConcurrentFileRead(filename string) []byte {
-	var chans [Concurrecy]chan []byte
-	for i := range chans {
-		chans[i] = make(chan []byte)
-	}
+	var chans chan Data
+	chans = make(chan Data)
 
 	info, err := os.Stat(filename)
 	if err != nil {
@@ -34,18 +41,18 @@ func ConcurrentFileRead(filename string) []byte {
 	}
 
 	file, _ := os.Open(filename)
-	data := make([]byte, 0)
+	data := make([]byte, info.Size())
 	size := int64(math.Ceil(float64(info.Size()) / float64(Concurrecy)))
 
 	for i := 0; i < Concurrecy-1; i++ {
-		go Read(file, chans[i], size, size*int64(i))
+		go Read(file, chans, size, size*int64(i), data)
 	}
 
-	go Read(file, chans[Concurrecy-1], int64(info.Size()-size*(Concurrecy-1)), size*(Concurrecy-1))
+	go Read(file, chans, int64(info.Size()-size*(Concurrecy-1)), size*(Concurrecy-1), data)
 
 	for i := 0; i < Concurrecy; i++ {
-		d := <-chans[i]
-		data = append(data, d...)
+		temp := <-chans
+		copy(data[temp.Offset:], temp.Data)
 	}
 	log.Printf("%s", data)
 
