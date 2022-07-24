@@ -14,6 +14,7 @@ func (r UploadRequest) Validate() error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -26,5 +27,6 @@ func (r DownloadRequest) Validate() error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

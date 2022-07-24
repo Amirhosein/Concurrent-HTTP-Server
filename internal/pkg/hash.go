@@ -25,5 +25,6 @@ func GenerateFileId(filename string) uint64 {
 	id := new(big.Int).SetBytes(urlHashBytes).Uint64()
 
 	log.Println(id)
+
 	return id
 }

@@ -26,6 +26,7 @@ func (h Handler) Home(c echo.Context) error {
 
 func (h Handler) Upload(c echo.Context) error {
 	var filename string
+
 	uploadRequest := new(request.UploadRequest)
 
 	data, err := c.FormFile("file")
@@ -69,18 +70,22 @@ func (h Handler) Upload(c echo.Context) error {
 	response := response.SuccessfulUpload{
 		FileId: strconv.FormatUint(accessHash, 10) + ":" + filename,
 	}
+
 	return c.JSON(http.StatusOK, response)
 }
 
 func (h Handler) Download(c echo.Context) error {
 	downloadRequest := new(request.DownloadRequest)
+
 	err := c.Bind(downloadRequest)
 	if err != nil {
 		log.Print(err)
 	}
+
 	fileIdS := strings.Split(downloadRequest.FileId, ":")[0]
 	fileId, _ := strconv.ParseUint(fileIdS, 10, 64)
 	log.Println(fileId)
+
 	file, ok := h.FileRepo.Get(fileId)
 	if !ok {
 		errorResponse := response.Error{
@@ -89,5 +94,6 @@ func (h Handler) Download(c echo.Context) error {
 
 		return c.JSON(http.StatusNotFound, errorResponse)
 	}
+
 	return c.Blob(http.StatusOK, "application/octet-stream", file.Data)
 }
