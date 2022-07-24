@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  web:
+    build:
+      context: ../
+      dockerfile: build/package/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - REDIS_HOST=redis
+    volumes:
+      - ../:/app/files/
+      - ../files/:/var/files/
+  redis:
+    image: redis
+  
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=alviss
+    volumes:
+      - ../db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    depends_on:
+      - web
+    networks:
+      - default
