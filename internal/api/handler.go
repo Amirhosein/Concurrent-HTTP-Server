@@ -231,3 +231,60 @@ func (h Handler) Download(c echo.Context) error {
 
 	return c.Blob(http.StatusOK, "application/octet-stream", file.Data)
 }
+
+func (h Handler) AddPermission(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*model.User)
+	username := claims.Username
+	log.Println(username)
+	permissionRequest := new(request.AddPermissionRequest)
+	err := c.Bind(permissionRequest)
+	if err != nil {
+		log.Print(err)
+	}
+	usr, err := h.UserRepo.Get(username, "")
+	if err != nil {
+		errorResponse := response.Error{
+			Error: err.Error(),
+		}
+
+		return c.JSON(http.StatusNotAcceptable, errorResponse)
+	}
+	files := usr.Files
+	log.Println(files)
+	fileIdS := strings.Split(permissionRequest.FileId, ":")[0]
+	fileId, _ := strconv.ParseUint(fileIdS, 10, 64)
+	log.Println(fileId)
+	// check if fileId exists in user's files
+	if !pkg.Contains(files, permissionRequest.FileId) {
+		errorResponse := response.Error{
+			Error: "You don't have permission to this file",
+		}
+
+		return c.JSON(http.StatusNotFound, errorResponse)
+	}
+
+	secondUser, err := h.UserRepo.Get(permissionRequest.Username, "")
+	if err != nil {
+		errorResponse := response.Error{
+			Error: err.Error(),
+		}
+
+		return c.JSON(http.StatusNotAcceptable, errorResponse)
+	}
+
+	secondUser.Files = append(secondUser.Files, permissionRequest.FileId)
+	err = h.UserRepo.Update(secondUser)
+	if err != nil {
+		errorResponse := response.Error{
+			Error: err.Error(),
+		}
+
+		return c.JSON(http.StatusNotAcceptable, errorResponse)
+	}
+
+	response := response.Message{
+		Message: "Permission added successfully",
+	}
+	return c.JSON(http.StatusOK, response)
+}

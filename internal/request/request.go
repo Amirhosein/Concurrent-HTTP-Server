@@ -49,3 +49,21 @@ func (r LoginRegisterRequest) Validate() error {
 
 	return nil
 }
+
+type AddPermissionRequest struct {
+	FileId   string `json:"file_id" binding:"required"`
+	Username string `json:"username_to_be_add" binding:"required"`
+}
+
+func (r AddPermissionRequest) Validate() error {
+	err := validation.Validate(r.FileId, validation.Required)
+	if err != nil {
+		return err
+	}
+	err = validation.Validate(r.Username, validation.Required)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

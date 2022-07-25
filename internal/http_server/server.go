@@ -65,5 +65,10 @@ func Run() {
 	s.Use(middleware.JWTWithConfig(config))
 	s.POST("", h.Download)
 
+	v := e.Group("/addPermission")
+
+	v.Use(middleware.JWTWithConfig(config))
+	v.POST("", h.AddPermission)
+
 	e.Logger.Fatal(e.Start(":" + "8080"))
 }
