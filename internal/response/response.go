@@ -11,3 +11,8 @@ type Error struct {
 type SuccessfulUpload struct {
 	FileId string `json:"file_id"`
 }
+
+type SuccessfulLogin struct {
+	Message string `json:"message"`
+	Token   string `json:"token"`
+}

@@ -30,3 +30,22 @@ func (r DownloadRequest) Validate() error {
 
 	return nil
 }
+
+type LoginRegisterRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+func (r LoginRegisterRequest) Validate() error {
+	err := validation.Validate(r.Username, validation.Required)
+	if err != nil {
+		return err
+	}
+
+	err = validation.Validate(r.Password, validation.Required)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
