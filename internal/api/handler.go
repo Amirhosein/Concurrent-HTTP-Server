@@ -6,16 +6,19 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"anbar.bale.ai/a.iravanimanesh/concurrent-http-server/internal/model"
 	"anbar.bale.ai/a.iravanimanesh/concurrent-http-server/internal/pkg"
 	"anbar.bale.ai/a.iravanimanesh/concurrent-http-server/internal/request"
 	"anbar.bale.ai/a.iravanimanesh/concurrent-http-server/internal/response"
-	"github.com/labstack/echo"
+	"github.com/golang-jwt/jwt"
+	"github.com/labstack/echo/v4"
 )
 
 type Handler struct {
 	FileRepo model.FileRepo
+	UserRepo model.UserRepo
 }
 
 func (h Handler) Home(c echo.Context) error {
@@ -24,7 +27,91 @@ func (h Handler) Home(c echo.Context) error {
 	return c.JSON(http.StatusOK, message)
 }
 
+func (h Handler) Register(c echo.Context) error {
+	request := new(request.LoginRegisterRequest)
+
+	err := c.Bind(request)
+	if err != nil {
+		log.Print(err)
+	}
+
+	if err := request.Validate(); err != nil {
+		errorResponse := response.Error{
+			Error: err.Error(),
+		}
+
+		return c.JSON(http.StatusNotAcceptable, errorResponse)
+	}
+
+	_, err = h.UserRepo.Set(request.Username, request.Password)
+	if err != nil {
+		errorResponse := response.Error{
+			Error: err.Error(),
+		}
+
+		return c.JSON(http.StatusNotAcceptable, errorResponse)
+	}
+
+	response := response.Message{
+		Message: "User registered successfully",
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func (h Handler) Login(c echo.Context) error {
+	loginRequest := new(request.LoginRegisterRequest)
+
+	err := c.Bind(loginRequest)
+	if err != nil {
+		log.Print(err)
+	}
+
+	if err := loginRequest.Validate(); err != nil {
+		errorResponse := response.Error{
+			Error: err.Error(),
+		}
+
+		return c.JSON(http.StatusNotAcceptable, errorResponse)
+	}
+
+	user, err := h.UserRepo.Get(loginRequest.Username, loginRequest.Password)
+	if err != nil {
+		errorResponse := response.Error{
+			Error: "User not found",
+		}
+		return c.JSON(http.StatusNotFound, errorResponse)
+	}
+
+	claim := &model.User{
+		user.ID,
+		user.Username,
+		user.Files,
+		jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
+
+	t, err := token.SignedString([]byte("secret"))
+	if err != nil {
+		return err
+	}
+
+	response := response.SuccessfulLogin{
+		Message: "Login successful",
+		Token:   t,
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
 func (h Handler) Upload(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*model.User)
+	files := claims.Files
+
 	var filename string
 
 	uploadRequest := new(request.UploadRequest)
@@ -66,6 +153,18 @@ func (h Handler) Upload(c echo.Context) error {
 
 	accessHash := pkg.GenerateFileId(filename)
 	h.FileRepo.Set(filename, accessHash, file)
+
+	files = append(files, strconv.FormatUint(accessHash, 10)+":"+filename)
+	claims.Files = files
+
+	err = h.UserRepo.Update(*claims)
+	if err != nil {
+		errorResponse := response.Error{
+			Error: err.Error(),
+		}
+
+		return c.JSON(http.StatusNotAcceptable, errorResponse)
+	}
 
 	response := response.SuccessfulUpload{
 		FileId: strconv.FormatUint(accessHash, 10) + ":" + filename,
