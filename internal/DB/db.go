@@ -46,13 +46,13 @@ func InitDB() *sql.DB {
 	// check if the table exists
 	var tableExists bool
 
-	err = db.QueryRow("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'url_mapping')").Scan(&tableExists)
+	err = db.QueryRow("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'users')").Scan(&tableExists)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	if !tableExists {
-		_, err = db.Exec("CREATE TABLE url_mapping (short_url VARCHAR(255) PRIMARY KEY, original_url VARCHAR(255), count INT, exp_time TIMESTAMP)")
+		_, err = db.Exec("CREATE TABLE users (id SERIAL PRIMARY KEY, username VARCHAR(255) NOT NULL, password VARCHAR(255) NOT NULL, files TEXT[])")
 	}
 
 	if err != nil {
