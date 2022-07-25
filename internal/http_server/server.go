@@ -58,10 +58,12 @@ func Run() {
 	}
 	r.Use(middleware.JWTWithConfig(config))
 	r.POST("", h.Upload)
+	r.POST("/a", h.Download)
 
-	e.POST("/download", func(c echo.Context) error {
-		return h.Download(c)
-	})
+	s := e.Group("/download")
+
+	s.Use(middleware.JWTWithConfig(config))
+	s.POST("", h.Download)
 
 	e.Logger.Fatal(e.Start(":" + "8080"))
 }

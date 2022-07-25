@@ -110,7 +110,17 @@ func (h Handler) Login(c echo.Context) error {
 func (h Handler) Upload(c echo.Context) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*model.User)
-	files := claims.Files
+
+	usr, err := h.UserRepo.Get(claims.Username, "")
+	if err != nil {
+		errorResponse := response.Error{
+			Error: err.Error(),
+		}
+
+		return c.JSON(http.StatusNotFound, errorResponse)
+	}
+
+	files := usr.Files
 
 	var filename string
 
@@ -156,6 +166,7 @@ func (h Handler) Upload(c echo.Context) error {
 
 	files = append(files, strconv.FormatUint(accessHash, 10)+":"+filename)
 	claims.Files = files
+	log.Println(claims.Files)
 
 	err = h.UserRepo.Update(*claims)
 	if err != nil {
@@ -174,6 +185,10 @@ func (h Handler) Upload(c echo.Context) error {
 }
 
 func (h Handler) Download(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*model.User)
+	username := claims.Username
+	log.Println(username)
 	downloadRequest := new(request.DownloadRequest)
 
 	err := c.Bind(downloadRequest)
@@ -181,9 +196,29 @@ func (h Handler) Download(c echo.Context) error {
 		log.Print(err)
 	}
 
+	usr, err := h.UserRepo.Get(username, "")
+	if err != nil {
+		errorResponse := response.Error{
+			Error: err.Error(),
+		}
+
+		return c.JSON(http.StatusNotAcceptable, errorResponse)
+	}
+	files := usr.Files
+	log.Println(files)
+
 	fileIdS := strings.Split(downloadRequest.FileId, ":")[0]
 	fileId, _ := strconv.ParseUint(fileIdS, 10, 64)
 	log.Println(fileId)
+
+	// check if fileId exists in user's files
+	if !pkg.Contains(files, downloadRequest.FileId) {
+		errorResponse := response.Error{
+			Error: "File not found",
+		}
+
+		return c.JSON(http.StatusNotFound, errorResponse)
+	}
 
 	file, ok := h.FileRepo.Get(fileId)
 	if !ok {
