@@ -86,10 +86,12 @@ func (s UserCache) Get(username string, password string) (User, error) {
 	var user User
 
 	result, err := s.Redis.Get(username).Result()
+
 	err1 := user.UnmarshalBinary([]byte(result))
 	if err1 != nil {
 		return user, err1
 	}
+
 	if err == redis.Nil {
 		log.Println("Redis cache miss")
 
@@ -112,6 +114,7 @@ func (s UserCache) Get(username string, password string) (User, error) {
 
 func (s UserCache) Set(username string, password string) (User, error) {
 	var user User
+
 	user, err := s.DB.Set(username, password)
 	if err != nil {
 		return user, err

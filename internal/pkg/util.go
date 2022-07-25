@@ -33,6 +33,7 @@ func Read(file *os.File, d chan Data, size, ofset int64, Readed []byte) {
 }
 func ConcurrentFileRead(filename string) []byte {
 	var chans chan Data
+
 	chans = make(chan Data)
 
 	info, err := os.Stat(filename)
@@ -96,5 +97,6 @@ func Contains(s []string, e string) bool {
 			return true
 		}
 	}
+
 	return false
 }

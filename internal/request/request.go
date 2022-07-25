@@ -60,6 +60,7 @@ func (r AddPermissionRequest) Validate() error {
 	if err != nil {
 		return err
 	}
+
 	err = validation.Validate(r.Username, validation.Required)
 	if err != nil {
 		return err
